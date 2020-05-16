@@ -1,5 +1,8 @@
 import dva from 'dva';
+import axios from 'axios';
 import './index.css';
+
+axios.defaults.baseURL = 'http://127.0.0.1:8081';
 
 // 1. Initialize
 const app = dva();
