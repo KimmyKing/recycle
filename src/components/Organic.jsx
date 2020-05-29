@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Button, Table, DatePicker, Select, Modal, Form, Input, InputNumber, message, Row, Col, Typography} from "antd";
+import {Button, Table, DatePicker, Modal, Form, Input, InputNumber, message, Row, Col} from "antd";
 import axios from 'axios';
 import moment from 'moment'
 import style from './view.less';
@@ -8,7 +8,7 @@ const labelCol = {
   span: 5
 };
 const wrapperCol = {
-  span: 12
+  span: 15
 };
 const formRef = React.createRef();
 class Organic extends Component {
@@ -40,7 +40,9 @@ class Organic extends Component {
     this.setState({loading: true}, () => {
       const {type, pageSize, params, currentPage} = this.state;
       axios.get(`/front/api/v1/recycle/list?type=${type}&pageNo=${currentPage}&pageSize=${pageSize}`, {params}).then(res => {
-        this.setState({data: res.data.data, loading: false});
+        if (res.data.code === 0) {
+          this.setState({data: res.data.data, loading: false});
+        }
       }).catch(err => {
         this.setState({loading: false}, () => {
           message.error('服务断开');
@@ -90,15 +92,24 @@ class Organic extends Component {
   }
 
   clickEditButton = (id) => {
+    if (formRef.current) {
+      formRef.current.resetFields();
+    }
     this.setState({isAdd: false, showModal: true, selectedId: id}, () => {
       axios.get(`/front/api/v1/recycle/detail?id=${id}`).then(res => {
         const data = res.data.data;
+        let innerData = {};
+        if (data.wasteList.length) {
+          innerData = data.wasteList[0];
+        }
         formRef.current.setFieldsValue({
           address: data.address,
           date: moment(data.date),
-          inOut: data.inOut,
-          sumWeight: data.sumWeight || 0,
-          sumMoney: data.sumMoney || 0,
+          inWeight: innerData.inWeight || 0,
+          inCars: innerData.inCars || 0,
+          outWeight: innerData.outWeight || 0,
+          outCars: innerData.outCars || 0,
+          memo: innerData.memo,
         });
       });
     });
@@ -123,10 +134,18 @@ class Organic extends Component {
         type,
         address: values.address,
         date: moment(values.date).format('YYYY-MM-DD'),
-        inOut: values.inOut,
-        sumMoney: values.sumMoney,
-        sumWeight: values.sumWeight,
+        wasteList: [
+          {
+            code: 'organic',
+            inWeight: values.inWeight || 0,
+            inCars: values.inCars || 0,
+            outWeight: values.outWeight || 0,
+            outCars: values.outCars || 0,
+            memo: values.memo || '',
+          },
+        ]
       };
+      data.wasteList[0].sumCars = data.wasteList[0].inCars + data.wasteList[0].outCars;
       let request;
       if (isAdd) {
         request =  axios.post('/front/api/v1/recycle/add', data);
@@ -136,7 +155,6 @@ class Organic extends Component {
       request.then(res => {
         this.setState({showModal: false}, () => {
           if (res.data.code === 0) {
-            formRef.current.resetFields();
             this.getViewData();
           } else {
             message.error('请求失败');
@@ -161,17 +179,20 @@ class Organic extends Component {
         onOk={this.submit.bind(this)}
       >
         <Form ref={formRef}>
-          <Form.Item
-            label="地点"
-            name="address"
-            rules={[{required: true, message: '请输入地点'}]}
-            labelCol={labelCol}
-            wrapperCol={wrapperCol}
-          >
-            <Input className={style.formItem} allowClear/>
-          </Form.Item>
-
           <Row>
+            <Col span={12}>
+              <Form.Item
+                label="地点"
+                name="address"
+                initialValue="松隐"
+                rules={[{required: true, message: '请输入地点'}]}
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <Input className={style.formItem} allowClear/>
+              </Form.Item>
+            </Col>
+
             <Col span={12}>
               <Form.Item
                 label="日期"
@@ -183,19 +204,28 @@ class Organic extends Component {
                 <DatePicker/>
               </Form.Item>
             </Col>
+          </Row>
 
+          <Row>
             <Col span={12}>
               <Form.Item
-                label="收/出"
-                name="inOut"
-                rules={[{required: true, message: '请选择收出'}]}
+                label="进场重量"
+                name="inWeight"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <Select className={style.formItem} >
-                  <Select.Option key={1}>收</Select.Option>
-                  <Select.Option key={2}>出</Select.Option>
-                </Select>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                label="车数"
+                name="inCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
               </Form.Item>
             </Col>
           </Row>
@@ -203,26 +233,41 @@ class Organic extends Component {
           <Row>
             <Col span={12}>
               <Form.Item
-                label="重量"
-                name="sumWeight"
+                label="出货重量"
+                name="outWeight"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
 
             <Col span={12}>
               <Form.Item
-                label="金额"
-                name="sumMoney"
+                label="车数"
+                name="outCars"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
               </Form.Item>
             </Col>
           </Row>
+
+          <Row>
+            <Col span={12}>
+              <Form.Item
+                label="备注"
+                name="memo"
+                rules={[{max: 10, message: '最多输入10个字'}]}
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <Input className={style.formItem} allowClear/>
+              </Form.Item>
+            </Col>
+          </Row>
+
         </Form>
       </Modal>
     )
@@ -238,13 +283,6 @@ class Organic extends Component {
 
         <div className={style.search_title}>地点：</div>
         <Input placeholder="请输入地点" allowClear style={{width: '150px'}} onChange={this.paramsChanged.bind(this, 'address')}/>
-
-        <div className={style.search_title}>收/出：</div>
-        <Select style={{width: '70px'}} onChange={this.paramsChanged.bind(this, 'inOut')}>
-          <Select.Option key={0}>全部</Select.Option>
-          <Select.Option key={1}>收</Select.Option>
-          <Select.Option key={2}>出</Select.Option>
-        </Select>
         <Button className={style.search_btn} type="primary" onClick={this.clickSearchButton}>查询</Button>
       </div>
     )
@@ -264,20 +302,40 @@ class Organic extends Component {
         key: 'address',
       },
       {
-        title: '收/出',
-        dataIndex: 'inOut',
-        key: 'inOut',
-        render: inOut => (<div>{inOut === '1' ? '收' : '出'}</div>)
+        title: '进场重量',
+        dataIndex: 'wasteList',
+        key: 'inWeight',
+        render: (wasteList) => (<div>{wasteList[0].inWeight}</div>)
       },
       {
-        title: '重量',
-        dataIndex: 'sumWeight',
-        key: 'sumWeight',
+        title: '车数',
+        dataIndex: 'wasteList',
+        key: 'inCars',
+        render: (wasteList) => (<div>{wasteList[0].inCars}</div>)
       },
       {
-        title: '金额',
-        dataIndex: 'sumMoney',
-        key: 'sumMoney',
+        title: '出货重量',
+        dataIndex: 'wasteList',
+        key: 'outWeight',
+        render: (wasteList) => (<div>{wasteList[0].outWeight}</div>)
+      },
+      {
+        title: '车数',
+        dataIndex: 'wasteList',
+        key: 'outCars',
+        render: (wasteList) => (<div>{wasteList[0].outCars}</div>)
+      },
+      {
+        title: '总车数',
+        dataIndex: 'wasteList',
+        key: 'sumCars',
+        render: (wasteList) => (<div>{wasteList[0].sumCars}</div>)
+      },
+      {
+        title: '备注',
+        dataIndex: 'wasteList',
+        key: 'memo',
+        render: (wasteList) => (<div>{wasteList[0].memo}</div>)
       },
       {
         dataIndex: 'id',
@@ -295,7 +353,7 @@ class Organic extends Component {
     const {pageSize, loading, data, currentPage} = this.state;
     return (
       <Table
-        style={{float: 'right', width: '80%'}}
+        style={{...this.props.style}}
         loading={loading}
         dataSource={data.list}
         columns={this.getColumns()}
@@ -317,13 +375,11 @@ class Organic extends Component {
             <Table.Summary.Row>
               <Table.Summary.Cell>总计</Table.Summary.Cell>
               <Table.Summary.Cell/>
-              <Table.Summary.Cell/>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigth}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoney}</Typography.Text>
-              </Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInWeightorganic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInCarsorganic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutWeightorganic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutCarsorganic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumCarsorganic}</Table.Summary.Cell>
             </Table.Summary.Row>
           );
         }}

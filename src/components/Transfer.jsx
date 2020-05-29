@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
-import {Button, Table, DatePicker, Select, Modal, Form, Input, InputNumber, message, Row, Col, Typography} from "antd";
+import {Button, Table, DatePicker, Modal, Form, Input, InputNumber, message, Row, Col} from "antd";
 import axios from 'axios';
 import moment from 'moment'
 import style from './view.less';
 
 const labelCol = {
-  span: 5
+  span: 12
 };
 const wrapperCol = {
   span: 12
@@ -90,26 +90,82 @@ class Transfer extends Component {
   }
 
   clickEditButton = (id) => {
+    if (formRef.current) {
+      formRef.current.resetFields();
+    }
     this.setState({isAdd: false, showModal: true, selectedId: id}, () => {
       axios.get(`/front/api/v1/recycle/detail?id=${id}`).then(res => {
         const data = res.data.data;
-        formRef.current.setFieldsValue({
-          address: data.address,
-          date: moment(data.date),
-          inOut: data.inOut,
-          metal_weight: data.wasteMetalModel ? data.wasteMetalModel.weight : 0,
-          metal_price: data.wasteMetalModel ? data.wasteMetalModel.money : 0,
-          plastic_weight: data.wastePlasticModel ? data.wastePlasticModel.weight : 0,
-          plastic_price: data.wastePlasticModel ? data.wastePlasticModel.money : 0,
-          paper_weight: data.wastePaperModel ? data.wastePaperModel.weight : 0,
-          paper_price: data.wastePaperModel ? data.wastePaperModel.money : 0,
-          fabric_weight: data.wasteTextileModel ? data.wasteTextileModel.weight : 0,
-          fabric_price: data.wasteTextileModel ? data.wasteTextileModel.money : 0,
-          glass_weight: data.wasteGlassModel ? data.wasteGlassModel.weight : 0,
-          glass_price: data.wasteGlassModel ? data.wasteGlassModel.money : 0,
-          home_appliances_weight: data.wasteApplianceModel ? data.wasteApplianceModel.weight : 0,
-          home_appliances_price: data.wasteApplianceModel ? data.wasteApplianceModel.money : 0,
+        const value = {
+         address: data.address,
+         date: moment(data.date),
+        };
+        data.wasteList.map((v) => {
+          if (v.code === 'metal') {
+            value.metal_inWeight = v.inWeight;
+            value.metal_inCars = v.inCars;
+            value.metal_inPrice = v.inPrice;
+            value.metal_outWeight = v.outWeight;
+            value.metal_outCars = v.outCars;
+            value.metal_outPrice = v.outPrice;
+            value.metal_memo = v.memo;
+          }
+          if (v.code === 'plastic') {
+            value.plastic_inWeight = v.inWeight;
+            value.plastic_inCars = v.inCars;
+            value.plastic_inPrice = v.inPrice;
+            value.plastic_outWeight = v.outWeight;
+            value.plastic_outCars = v.outCars;
+            value.plastic_outPrice = v.outPrice;
+            value.plastic_memo = v.memo;
+          }
+          if (v.code === 'paper') {
+            value.paper_inWeight = v.inWeight;
+            value.paper_inCars = v.inCars;
+            value.paper_inPrice = v.inPrice;
+            value.paper_outWeight = v.outWeight;
+            value.paper_outCars = v.outCars;
+            value.paper_outPrice = v.outPrice;
+            value.paper_memo = v.memo;
+          }
+          if (v.code === 'textile') {
+            value.textile_inWeight = v.inWeight;
+            value.textile_inCars = v.inCars;
+            value.textile_inPrice = v.inPrice;
+            value.textile_outWeight = v.outWeight;
+            value.textile_outCars = v.outCars;
+            value.textile_outPrice = v.outPrice;
+            value.textile_memo = v.memo;
+          }
+          if (v.code === 'glass') {
+            value.glass_inWeight = v.inWeight;
+            value.glass_inCars = v.inCars;
+            value.glass_inPrice = v.inPrice;
+            value.glass_outWeight = v.outWeight;
+            value.glass_outCars = v.outCars;
+            value.glass_outPrice = v.outPrice;
+            value.glass_memo = v.memo;
+          }
+          if (v.code === 'appliance') {
+            value.appliance_inWeight = v.inWeight;
+            value.appliance_inCars = v.inCars;
+            value.appliance_inPrice = v.inPrice;
+            value.appliance_outWeight = v.outWeight;
+            value.appliance_outCars = v.outCars;
+            value.appliance_outPrice = v.outPrice;
+            value.appliance_memo = v.memo;
+          }
+          if (v.code === 'others') {
+            value.others_inWeight = v.inWeight;
+            value.others_inCars = v.inCars;
+            value.others_inPrice = v.inPrice;
+            value.others_outWeight = v.outWeight;
+            value.others_outCars = v.outCars;
+            value.others_outPrice = v.outPrice;
+            value.others_memo = v.memo;
+          }
         });
+        formRef.current.setFieldsValue(value);
       });
     });
   }
@@ -133,60 +189,121 @@ class Transfer extends Component {
         type,
         address: values.address,
         date: moment(values.date).format('YYYY-MM-DD'),
-        inOut: values.inOut,
+        wasteList: [],
       };
-      let sumMoney = 0;
-      let sumWeight = 0;
-      if (values.metal_weight || values.metal_price) {
-        const wasteMetalModel = {};
-        wasteMetalModel.weight = values.metal_weight ? parseFloat(values.metal_weight) : 0;
-        wasteMetalModel.money =  values.metal_price ? parseFloat(values.metal_price) :  0;
-        data.wasteMetalModel = wasteMetalModel;
-        sumWeight += wasteMetalModel.weight;
-        sumMoney += wasteMetalModel.money;
+      if (values.metal_inWeight || values.metal_inCars || values.metal_inPrice || values.metal_outWeight || values.metal_outCars || values.metal_outPrice || values.metal_memo) {
+        const model = {
+          code: 'metal',
+          inWeight: values.metal_inWeight,
+          inCars: values.metal_inCars,
+          inPrice: values.metal_inPrice,
+          outWeight: values.metal_outWeight,
+          outCars: values.metal_outCars,
+          outPrice: values.metal_outPrice,
+          memo: values.metal_memo,
+        };
+        if (model.inCars || model.outCars) {
+          model.sumCars = model.inCars + model.outCars;
+        }
+        data.wasteList.push(model);
       }
-      if (values.plastic_weight || values.plastic_price) {
-        const wastePlasticModel = {};
-        wastePlasticModel.weight = values.plastic_weight ? parseFloat(values.plastic_weight) : 0;
-        wastePlasticModel.money =  values.plastic_price ? parseFloat(values.plastic_price) :  0;
-        data.wastePlasticModel = wastePlasticModel;
-        sumWeight += wastePlasticModel.weight;
-        sumMoney += wastePlasticModel.money;
+      if (values.plastic_inWeight || values.plastic_inCars || values.plastic_inPrice || values.plastic_outWeight || values.plastic_outCars || values.plastic_outPrice || values.plastic_memo) {
+        const model = {
+          code: 'plastic',
+          inWeight: values.plastic_inWeight,
+          inCars: values.plastic_inCars,
+          inPrice: values.plastic_inPrice,
+          outWeight: values.plastic_outWeight,
+          outCars: values.plastic_outCars,
+          outPrice: values.plastic_outPrice,
+          memo: values.plastic_memo,
+        };
+        if (model.inCars || model.outCars) {
+          model.sumCars = model.inCars + model.outCars;
+        }
+        data.wasteList.push(model);
       }
-      if (values.paper_weight || values.paper_price) {
-        const wastePaperModel = {};
-        wastePaperModel.weight = values.paper_weight ? parseFloat(values.paper_weight) : 0;
-        wastePaperModel.money =  values.paper_price ? parseFloat(values.paper_price) :  0;
-        data.wastePaperModel = wastePaperModel;
-        sumWeight += wastePaperModel.weight;
-        sumMoney += wastePaperModel.money;
+      if (values.paper_inWeight || values.paper_inCars || values.paper_inPrice || values.paper_outWeight || values.paper_outCars || values.paper_outPrice || values.paper_memo) {
+        const model = {
+          code: 'paper',
+          inWeight: values.paper_inWeight,
+          inCars: values.paper_inCars,
+          inPrice: values.paper_inPrice,
+          outWeight: values.paper_outWeight,
+          outCars: values.paper_outCars,
+          outPrice: values.paper_outPrice,
+          memo: values.paper_memo,
+        };
+        if (model.inCars || model.outCars) {
+          model.sumCars = model.inCars + model.outCars;
+        }
+        data.wasteList.push(model);
       }
-      if (values.fabric_weight || values.fabric_price) {
-        const wasteTextileModel = {};
-        wasteTextileModel.weight = values.fabric_weight ? parseFloat(values.fabric_weight) : 0;
-        wasteTextileModel.money =  values.fabric_price ? parseFloat(values.fabric_price) :  0;
-        data.wasteTextileModel = wasteTextileModel;
-        sumWeight += wasteTextileModel.weight;
-        sumMoney += wasteTextileModel.money;
+      if (values.textile_inWeight || values.textile_inCars || values.textile_inPrice || values.textile_outWeight || values.textile_outCars || values.textile_outPrice || values.textile_memo) {
+        const model = {
+          code: 'textile',
+          inWeight: values.textile_inWeight,
+          inCars: values.textile_inCars,
+          inPrice: values.textile_inPrice,
+          outWeight: values.textile_outWeight,
+          outCars: values.textile_outCars,
+          outPrice: values.textile_outPrice,
+          memo: values.textile_memo,
+        };
+        if (model.inCars || model.outCars) {
+          model.sumCars = model.inCars + model.outCars;
+        }
+        data.wasteList.push(model);
       }
-      if (values.glass_weight || values.glass_price) {
-        const wasteGlassModel = {};
-        wasteGlassModel.weight = values.glass_weight ? parseFloat(values.glass_weight) : 0;
-        wasteGlassModel.money =  values.glass_price ? parseFloat(values.glass_price) :  0;
-        data.wasteGlassModel = wasteGlassModel;
-        sumWeight += wasteGlassModel.weight;
-        sumMoney += wasteGlassModel.money;
+      if (values.glass_inWeight || values.glass_inCars || values.glass_inPrice || values.glass_outWeight || values.glass_outCars || values.glass_outPrice || values.glass_memo) {
+        const model = {
+          code: 'glass',
+          inWeight: values.glass_inWeight,
+          inCars: values.glass_inCars,
+          inPrice: values.glass_inPrice,
+          outWeight: values.glass_outWeight,
+          outCars: values.glass_outCars,
+          outPrice: values.glass_outPrice,
+          memo: values.glass_memo,
+        };
+        if (model.inCars || model.outCars) {
+          model.sumCars = model.inCars + model.outCars;
+        }
+        data.wasteList.push(model);
       }
-      if (values.home_appliances_weight || values.home_appliances_price) {
-        const wasteApplianceModel = {};
-        wasteApplianceModel.weight = values.home_appliances_weight ? parseFloat(values.home_appliances_weight) : 0;
-        wasteApplianceModel.money =  values.home_appliances_price ? parseFloat(values.home_appliances_price) :  0;
-        data.wasteApplianceModel = wasteApplianceModel;
-        sumWeight += wasteApplianceModel.weight;
-        sumMoney += wasteApplianceModel.money;
+      if (values.appliance_inWeight || values.appliance_inCars || values.appliance_inPrice || values.appliance_outWeight || values.appliance_outCars || values.appliance_outPrice || values.appliance_memo) {
+        const model = {
+          code: 'appliance',
+          inWeight: values.appliance_inWeight,
+          inCars: values.appliance_inCars,
+          inPrice: values.appliance_inPrice,
+          outWeight: values.appliance_outWeight,
+          outCars: values.appliance_outCars,
+          outPrice: values.appliance_outPrice,
+          memo: values.appliance_memo,
+        };
+        if (model.inCars || model.outCars) {
+          model.sumCars = model.inCars + model.outCars;
+        }
+        data.wasteList.push(model);
       }
-      data.sumMoney = sumMoney.toFixed(2);
-      data.sumWeight = sumWeight.toFixed(2);
+      if (values.others_inWeight || values.others_inCars || values.others_inPrice || values.others_outWeight || values.others_outCars || values.others_outPrice || values.others_memo) {
+        const model = {
+          code: 'others',
+          inWeight: values.others_inWeight,
+          inCars: values.others_inCars,
+          inPrice: values.others_inPrice,
+          outWeight: values.others_outWeight,
+          outCars: values.others_outCars,
+          outPrice: values.others_outPrice,
+          memo: values.others_memo,
+        };
+        if (model.inCars || model.outCars) {
+          model.sumCars = model.inCars + model.outCars;
+        }
+        data.wasteList.push(model);
+      }
+
       let request;
       if (isAdd) {
         request =  axios.post('/front/api/v1/recycle/add', data);
@@ -196,7 +313,6 @@ class Transfer extends Component {
       request.then(res => {
         this.setState({showModal: false}, () => {
           if (res.data.code === 0) {
-            formRef.current.resetFields();
             this.getViewData();
           } else {
             message.error('请求失败');
@@ -216,190 +332,602 @@ class Transfer extends Component {
       <Modal
         title={`${isAdd ? '新增' : '编辑'}数据`}
         visible={showModal}
-        width={800}
+        width={1500}
         onCancel={() => this.setState({showModal: false})}
         onOk={this.submit.bind(this)}
       >
         <Form ref={formRef}>
-          <Form.Item
-            label="地点"
-            name="address"
-            rules={[{required: true, message: '请输入地点'}]}
-            labelCol={labelCol}
-            wrapperCol={wrapperCol}
-          >
-            <Input className={style.formItem} allowClear/>
-          </Form.Item>
-
           <Row>
+            <Col span={12}>
+              <Form.Item
+                label="地点"
+                name="address"
+                initialValue="松隐"
+                rules={[{required: true, message: '请输入地点'}]}
+                labelCol={{span: 3}}
+                wrapperCol={{span: 10}}
+              >
+                <Input className={style.formItem} allowClear/>
+              </Form.Item>
+            </Col>
+
             <Col span={12}>
               <Form.Item
                 label="日期"
                 name="date"
                 rules={[{required: true, message: '请选择日期'}]}
-                labelCol={labelCol}
-                wrapperCol={wrapperCol}
+                labelCol={{span: 3}}
+                wrapperCol={{span: 10}}
               >
                 <DatePicker/>
               </Form.Item>
             </Col>
+          </Row>
 
-            <Col span={12}>
+          <h2>废金属：</h2>
+          <Row>
+            <Col span={3}>
               <Form.Item
-                label="收/出"
-                name="inOut"
-                rules={[{required: true, message: '请选择收出'}]}
+                label="进场重量"
+                name="metal_inWeight"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <Select className={style.formItem} >
-                  <Select.Option key={1}>收</Select.Option>
-                  <Select.Option key={2}>出</Select.Option>
-                </Select>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="单价"
+                name="metal_inPrice"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="车数"
+                name="metal_inCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="出货重量"
+                name="metal_outWeight"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="单价"
+                name="metal_outPrice"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="车数"
+                name="metal_outCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={4}>
+              <Form.Item
+                label="备注"
+                name="metal_memo"
+                rules={[{max: 10, message: '最多输入10个字'}]}
+                labelCol={{span: 7}}
+                wrapperCol={{span: 17}}
+              >
+                <Input className={style.formItem} allowClear/>
               </Form.Item>
             </Col>
           </Row>
 
+          <h2>废塑料：</h2>
           <Row>
-            <Col span={12}>
+            <Col span={3}>
               <Form.Item
-                label="废金属重量"
-                name="metal_weight"
+                label="进场重量"
+                name="plastic_inWeight"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
 
-            <Col span={12}>
+            <Col span={3}>
               <Form.Item
-                label="废金属价格"
-                name="metal_price"
+                label="单价"
+                name="plastic_inPrice"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col span={12}>
-              <Form.Item
-                label="废塑料重量"
-                name="plastic_weight"
-                labelCol={labelCol}
-                wrapperCol={wrapperCol}
-              >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
 
-            <Col span={12}>
+            <Col span={3}>
               <Form.Item
-                label="废塑料价格"
-                name="plastic_price"
+                label="车数"
+                name="plastic_inCars"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
-              </Form.Item>
-            </Col>
-          </Row>
-
-
-          <Row>
-            <Col span={12}>
-              <Form.Item
-                label="废纸张重量"
-                name="paper_weight"
-                labelCol={labelCol}
-                wrapperCol={wrapperCol}
-              >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
               </Form.Item>
             </Col>
 
-            <Col span={12}>
+            <Col span={3}>
               <Form.Item
-                label="废纸张价格"
-                name="paper_price"
+                label="出货重量"
+                name="plastic_outWeight"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
-          </Row>
 
-
-          <Row>
-            <Col span={12}>
+            <Col span={3}>
               <Form.Item
-                label="废织物重量"
-                name="fabric_weight"
+                label="单价"
+                name="plastic_outPrice"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
-            <Col span={12}>
+
+            <Col span={3}>
               <Form.Item
-                label="废织物价格"
-                name="fabric_price"
+                label="车数"
+                name="plastic_outCars"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={4}>
+              <Form.Item
+                label="备注"
+                name="plastic_memo"
+                rules={[{max: 10, message: '最多输入10个字'}]}
+                labelCol={{span: 7}}
+                wrapperCol={{span: 17}}
+              >
+                <Input className={style.formItem} allowClear/>
               </Form.Item>
             </Col>
           </Row>
 
 
+          <h2>废纸张：</h2>
           <Row>
-            <Col span={12}>
+            <Col span={3}>
               <Form.Item
-                label="废玻璃重量"
-                name="glass_weight"
+                label="进场重量"
+                name="paper_inWeight"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
-            <Col span={12}>
+
+            <Col span={3}>
               <Form.Item
-                label="废玻璃价格"
-                name="glass_price"
+                label="单价"
+                name="paper_inPrice"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
-              </Form.Item></Col>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="车数"
+                name="paper_inCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="出货重量"
+                name="paper_outWeight"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="单价"
+                name="paper_outPrice"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="车数"
+                name="paper_outCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={4}>
+              <Form.Item
+                label="备注"
+                name="paper_memo"
+                rules={[{max: 10, message: '最多输入10个字'}]}
+                labelCol={{span: 7}}
+                wrapperCol={{span: 17}}
+              >
+                <Input className={style.formItem} allowClear/>
+              </Form.Item>
+            </Col>
           </Row>
 
+          <h2>废织物：</h2>
           <Row>
-            <Col span={12}>
-
+            <Col span={3}>
               <Form.Item
-                label="废家电重量"
-                name="home_appliances_weight"
+                label="进场重量"
+                name="textile_inWeight"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
-            <Col span={12}>
+
+            <Col span={3}>
               <Form.Item
-                label="废家电价格"
-                name="home_appliances_price"
+                label="单价"
+                name="textile_inPrice"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="车数"
+                name="textile_inCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="出货重量"
+                name="textile_outWeight"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="单价"
+                name="textile_outPrice"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="车数"
+                name="textile_outCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={4}>
+              <Form.Item
+                label="备注"
+                name="textile_memo"
+                rules={[{max: 10, message: '最多输入10个字'}]}
+                labelCol={{span: 7}}
+                wrapperCol={{span: 17}}
+              >
+                <Input className={style.formItem} allowClear/>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <h2>废玻璃：</h2>
+          <Row>
+            <Col span={3}>
+              <Form.Item
+                label="进场重量"
+                name="glass_inWeight"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="单价"
+                name="glass_inPrice"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="车数"
+                name="glass_inCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="出货重量"
+                name="glass_outWeight"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="单价"
+                name="glass_outPrice"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="车数"
+                name="glass_outCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={4}>
+              <Form.Item
+                label="备注"
+                name="glass_memo"
+                rules={[{max: 10, message: '最多输入10个字'}]}
+                labelCol={{span: 7}}
+                wrapperCol={{span: 17}}
+              >
+                <Input className={style.formItem} allowClear/>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <h2>废家电：</h2>
+          <Row>
+            <Col span={3}>
+              <Form.Item
+                label="进场重量"
+                name="appliance_inWeight"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="单价"
+                name="appliance_inPrice"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="车数"
+                name="appliance_inCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="出货重量"
+                name="appliance_outWeight"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="单价"
+                name="appliance_outPrice"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="车数"
+                name="appliance_outCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={4}>
+              <Form.Item
+                label="备注"
+                name="appliance_memo"
+                rules={[{max: 10, message: '最多输入10个字'}]}
+                labelCol={{span: 7}}
+                wrapperCol={{span: 17}}
+              >
+                <Input className={style.formItem} allowClear/>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <h2>其它：</h2>
+          <Row>
+            <Col span={3}>
+              <Form.Item
+                label="进场重量"
+                name="others_inWeight"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="单价"
+                name="others_inPrice"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="车数"
+                name="others_inCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="出货重量"
+                name="others_outWeight"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="单价"
+                name="others_outPrice"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={3}>
+              <Form.Item
+                label="车数"
+                name="others_outCars"
+                labelCol={labelCol}
+                wrapperCol={wrapperCol}
+              >
+                <InputNumber min={0} style={{width: '100%'}} precision={0}/>
+              </Form.Item>
+            </Col>
+
+            <Col span={4}>
+              <Form.Item
+                label="备注"
+                name="others_memo"
+                rules={[{max: 10, message: '最多输入10个字'}]}
+                labelCol={{span: 7}}
+                wrapperCol={{span: 17}}
+              >
+                <Input className={style.formItem} allowClear/>
               </Form.Item>
             </Col>
           </Row>
@@ -418,18 +946,10 @@ class Transfer extends Component {
 
         <div className={style.search_title}>地点：</div>
         <Input placeholder="请输入地点" allowClear style={{width: '150px'}} onChange={this.paramsChanged.bind(this, 'address')}/>
-
-        <div className={style.search_title}>收/出：</div>
-        <Select style={{width: '70px'}} onChange={this.paramsChanged.bind(this, 'inOut')}>
-          <Select.Option key={0}>全部</Select.Option>
-          <Select.Option key={1}>收</Select.Option>
-          <Select.Option key={2}>出</Select.Option>
-        </Select>
         <Button className={style.search_btn} type="primary" onClick={this.clickSearchButton}>查询</Button>
       </div>
     )
   }
-
 
   getColumns = () => {
     return [
@@ -444,35 +964,103 @@ class Transfer extends Component {
         key: 'address',
       },
       {
-        title: '收/出',
-        dataIndex: 'inOut',
-        key: 'inOut',
-        render: inOut => (<div>{inOut === '1' ? '收' : '出'}</div>)
-      },
-      {
-        title: '合计重量',
-        dataIndex: 'sumWeight',
-        key: 'sumWeight',
-      },
-      {
-        title: '合计金额',
-        dataIndex: 'sumMoney',
-        key: 'sumMoney',
-      },
-      {
         title: '废金属',
         children: [
           {
-            title: '重量',
-            dataIndex: 'wasteMetalModel',
-            key: 'wasteMetalModel.weight',
-            render: wasteMetalModel => <div>{wasteMetalModel ? wasteMetalModel.weight : 0}</div>
+            title: '进场重量',
+            dataIndex: 'wasteList',
+            key: 'metal_inWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'metal') {
+                  return <div>{v.inWeight}</div>
+                }
+              })
+            )
           },
           {
-            title: '金额',
-            dataIndex: 'wasteMetalModel',
-            key: 'wasteMetalModel.money',
-            render: wasteMetalModel => <div>{wasteMetalModel ? wasteMetalModel.money : 0}</div>
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'metal_inPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'metal') {
+                  return <div>{v.inPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'metal_inCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'metal') {
+                  return <div>{v.inCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '出货重量',
+            dataIndex: 'wasteList',
+            key: 'metal_outWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'metal') {
+                  return <div>{v.outWeight}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'metal_outPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'metal') {
+                  return <div>{v.outPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'metal_outCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'metal') {
+                  return <div>{v.outCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '总车数',
+            dataIndex: 'wasteList',
+            key: 'metal_sumCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'metal') {
+                  return <div>{v.sumCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '备注',
+            dataIndex: 'wasteList',
+            key: 'metal_memo',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'metal') {
+                  return <div>{v.memo}</div>
+                }
+              })
+            )
           },
         ],
       },
@@ -480,16 +1068,100 @@ class Transfer extends Component {
         title: '废塑料',
         children: [
           {
-            title: '重量',
-            dataIndex: 'wastePlasticModel',
-            key: 'wastePlasticModel.weight',
-            render: wastePlasticModel => <div>{wastePlasticModel ? wastePlasticModel.weight : 0}</div>
+            title: '进场重量',
+            dataIndex: 'wasteList',
+            key: 'plastic_inWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'plastic') {
+                  return <div>{v.inWeight}</div>
+                }
+              })
+            )
           },
           {
-            title: '金额',
-            dataIndex: 'wastePlasticModel',
-            key: 'wastePlasticModel.money',
-            render: wastePlasticModel => <div>{wastePlasticModel ? wastePlasticModel.money : 0}</div>
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'plastic_inPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'plastic') {
+                  return <div>{v.inPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'plastic_inCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'plastic') {
+                  return <div>{v.inCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '出货重量',
+            dataIndex: 'wasteList',
+            key: 'plastic_outWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'plastic') {
+                  return <div>{v.outWeight}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'plastic_outPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'plastic') {
+                  return <div>{v.outPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'plastic_outCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'plastic') {
+                  return <div>{v.outCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '总车数',
+            dataIndex: 'wasteList',
+            key: 'plastic_sumCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'plastic') {
+                  return <div>{v.sumCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '备注',
+            dataIndex: 'wasteList',
+            key: 'plastic_memo',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'plastic') {
+                  return <div>{v.memo}</div>
+                }
+              })
+            )
           },
         ],
       },
@@ -497,16 +1169,100 @@ class Transfer extends Component {
         title: '废纸张',
         children: [
           {
-            title: '重量',
-            dataIndex: 'wastePaperModel',
-            key: 'wastePaperModel.weight',
-            render: wastePaperModel => <div>{wastePaperModel ? wastePaperModel.weight : 0}</div>
+            title: '进场重量',
+            dataIndex: 'wasteList',
+            key: 'paper_inWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'paper') {
+                  return <div>{v.inWeight}</div>
+                }
+              })
+            )
           },
           {
-            title: '金额',
-            dataIndex: 'wastePaperModel',
-            key: 'wastePaperModel.money',
-            render: wastePaperModel => <div>{wastePaperModel ? wastePaperModel.money : 0}</div>
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'paper_inPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'paper') {
+                  return <div>{v.inPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'paper_inCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'paper') {
+                  return <div>{v.inCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '出货重量',
+            dataIndex: 'wasteList',
+            key: 'paper_outWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'paper') {
+                  return <div>{v.outWeight}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'paper_outPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'paper') {
+                  return <div>{v.outPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'paper_outCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'paper') {
+                  return <div>{v.outCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '总车数',
+            dataIndex: 'wasteList',
+            key: 'paper_sumCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'paper') {
+                  return <div>{v.sumCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '备注',
+            dataIndex: 'wasteList',
+            key: 'paper_memo',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'paper') {
+                  return <div>{v.memo}</div>
+                }
+              })
+            )
           },
         ],
       },
@@ -514,16 +1270,100 @@ class Transfer extends Component {
         title: '废织物',
         children: [
           {
-            title: '重量',
-            dataIndex: 'wasteTextileModel',
-            key: 'wasteTextileModel.weight',
-            render: wasteTextileModel => <div>{wasteTextileModel ? wasteTextileModel.weight : 0}</div>
+            title: '进场重量',
+            dataIndex: 'wasteList',
+            key: 'textile_inWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'textile') {
+                  return <div>{v.inWeight}</div>
+                }
+              })
+            )
           },
           {
-            title: '金额',
-            dataIndex: 'wasteTextileModel',
-            key: 'wasteTextileModel.money',
-            render: wasteTextileModel => <div>{wasteTextileModel ? wasteTextileModel.money : 0}</div>
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'textile_inPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'textile') {
+                  return <div>{v.inPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'textile_inCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'textile') {
+                  return <div>{v.inCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '出货重量',
+            dataIndex: 'wasteList',
+            key: 'textile_outWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'textile') {
+                  return <div>{v.outWeight}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'textile_outPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'textile') {
+                  return <div>{v.outPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'textile_outCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'textile') {
+                  return <div>{v.outCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '总车数',
+            dataIndex: 'wasteList',
+            key: 'textile_sumCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'textile') {
+                  return <div>{v.sumCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '备注',
+            dataIndex: 'wasteList',
+            key: 'textile_memo',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'textile') {
+                  return <div>{v.memo}</div>
+                }
+              })
+            )
           },
         ],
       },
@@ -531,16 +1371,100 @@ class Transfer extends Component {
         title: '废玻璃',
         children: [
           {
-            title: '重量',
-            dataIndex: 'wasteGlassModel',
-            key: 'wasteGlassModel.weight',
-            render: wasteGlassModel => <div>{wasteGlassModel ? wasteGlassModel.weight : 0}</div>
+            title: '进场重量',
+            dataIndex: 'wasteList',
+            key: 'glass_inWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'glass') {
+                  return <div>{v.inWeight}</div>
+                }
+              })
+            )
           },
           {
-            title: '金额',
-            dataIndex: 'wasteGlassModel',
-            key: 'wasteGlassModel.money',
-            render: wasteGlassModel => <div>{wasteGlassModel ? wasteGlassModel.money : 0}</div>
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'glass_inPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'glass') {
+                  return <div>{v.inPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'glass_inCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'glass') {
+                  return <div>{v.inCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '出货重量',
+            dataIndex: 'wasteList',
+            key: 'glass_outWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'glass') {
+                  return <div>{v.outWeight}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'glass_outPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'glass') {
+                  return <div>{v.outPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'glass_outCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'glass') {
+                  return <div>{v.outCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '总车数',
+            dataIndex: 'wasteList',
+            key: 'glass_sumCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'glass') {
+                  return <div>{v.sumCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '备注',
+            dataIndex: 'wasteList',
+            key: 'glass_memo',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'glass') {
+                  return <div>{v.memo}</div>
+                }
+              })
+            )
           },
         ],
       },
@@ -548,16 +1472,201 @@ class Transfer extends Component {
         title: '废家电',
         children: [
           {
-            title: '重量',
-            dataIndex: 'wasteApplianceModel',
-            key: 'wasteApplianceModel.weight',
-            render: wasteApplianceModel => <div>{wasteApplianceModel ? wasteApplianceModel.weight : 0}</div>
+            title: '进场重量',
+            dataIndex: 'wasteList',
+            key: 'appliance_inWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'appliance') {
+                  return <div>{v.inWeight}</div>
+                }
+              })
+            )
           },
           {
-            title: '金额',
-            dataIndex: 'wasteApplianceModel',
-            key: 'wasteApplianceModel.money',
-            render: wasteApplianceModel => <div>{wasteApplianceModel ? wasteApplianceModel.money : 0}</div>
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'appliance_inPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'appliance') {
+                  return <div>{v.inPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'appliance_inCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'appliance') {
+                  return <div>{v.inCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '出货重量',
+            dataIndex: 'wasteList',
+            key: 'appliance_outWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'appliance') {
+                  return <div>{v.outWeight}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'appliance_outPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'appliance') {
+                  return <div>{v.outPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'appliance_outCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'appliance') {
+                  return <div>{v.outCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '总车数',
+            dataIndex: 'wasteList',
+            key: 'appliance_sumCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'appliance') {
+                  return <div>{v.sumCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '备注',
+            dataIndex: 'wasteList',
+            key: 'appliance_memo',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'appliance') {
+                  return <div>{v.memo}</div>
+                }
+              })
+            )
+          },
+        ],
+      },
+      {
+        title: '其它',
+        children: [
+          {
+            title: '进场重量',
+            dataIndex: 'wasteList',
+            key: 'others_inWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'others') {
+                  return <div>{v.inWeight}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'others_inPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'others') {
+                  return <div>{v.inPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'others_inCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'others') {
+                  return <div>{v.inCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '出货重量',
+            dataIndex: 'wasteList',
+            key: 'others_outWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'others') {
+                  return <div>{v.outWeight}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '单价',
+            dataIndex: 'wasteList',
+            key: 'others_outPrice',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'others') {
+                  return <div>{v.outPrice}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '车数',
+            dataIndex: 'wasteList',
+            key: 'others_outCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'others') {
+                  return <div>{v.outCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '总车数',
+            dataIndex: 'wasteList',
+            key: 'others_sumCars',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'others') {
+                  return <div>{v.sumCars}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '备注',
+            dataIndex: 'wasteList',
+            key: 'others_memo',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'others') {
+                  return <div>{v.memo}</div>
+                }
+              })
+            )
           },
         ],
       },
@@ -577,11 +1686,12 @@ class Transfer extends Component {
     const {pageSize, loading, data, currentPage} = this.state;
     return (
       <Table
-        style={{float: 'right', width: '80%'}}
+        style={{...this.props.style}}
         loading={loading}
         dataSource={data.list}
         columns={this.getColumns()}
         bordered
+        scroll={{x: 'max-content'}}
         pagination={{pageSize: pageSize, current: currentPage, total: data.total}}
         onChange={({current}) => {
           this.setState({currentPage: current}, () => {});
@@ -599,49 +1709,68 @@ class Transfer extends Component {
             <Table.Summary.Row>
               <Table.Summary.Cell>总计</Table.Summary.Cell>
               <Table.Summary.Cell/>
+              <Table.Summary.Cell>{data.sumInWeightMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInPriceMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInCarsMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutWeightMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutPriceMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutCarsMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumCarsMetal}</Table.Summary.Cell>
               <Table.Summary.Cell/>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigth}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoney}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigthMetal}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoneyMetal}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigthPlastic}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoneyPlastic}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigthPaper}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoneyPaper}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigthTextile}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoneyTextile}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigthGlass}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoneyGlass}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigthappliance}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoneyappliance}</Typography.Text>
-              </Table.Summary.Cell>
+
+              <Table.Summary.Cell>{data.sumInWeightPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInPricePlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInCarsPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutWeightPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutPricePlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutCarsPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumCarsPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell/>
+
+              <Table.Summary.Cell>{data.sumInWeightPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInPricePaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInCarsPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutWeightPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutPricePaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutCarsPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumCarsPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell/>
+
+              <Table.Summary.Cell>{data.sumInWeightTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInPriceTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInCarsTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutWeightTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutPriceTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutCarsTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumCarsTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell/>
+
+              <Table.Summary.Cell>{data.sumInWeightGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInPriceGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInCarsGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutWeightGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutPriceGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutCarsGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumCarsGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell/>
+
+              <Table.Summary.Cell>{data.sumInWeightappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInPriceappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInCarsappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutWeightappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutPriceappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutCarsappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumCarsappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell/>
+
+              <Table.Summary.Cell>{data.sumInWeightOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInPriceOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumInCarsOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutWeightOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutPriceOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumOutCarsOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumCarsOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell/>
             </Table.Summary.Row>
           );
         }}

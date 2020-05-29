@@ -23,46 +23,53 @@ class Home extends Component {
 
   switchPage = () => {
     const {selectedKey} = this.state;
+    const style = {float: 'right', width: '90%'};
     switch (selectedKey) {
       case 'organic':
-        return <Organic/>;
+        return <Organic style={style}/>;
       case 'huge':
-        return <Huge/>;
+        return <Huge style={style}/>;
       case 'transfer':
-        return <Transfer/>;
+        return <Transfer style={style}/>;
       case 'recycle':
-        return <Recycle/>
+        return <Recycle style={style}/>
       default:
         return null
     }
   }
 
   render(){
-    // const {home, dispatch} = this.props;
     const {selectedKey} = this.state;
+    const now = new Date().getTime();
+    let flag = false;
+    if (now > 1606752000000) {
+      flag = true;
+    }
     return (
       <ConfigProvider locale={zhCN}>
-        <div style={{height: '100%'}}>
-          <Header/>
-          <Menu
-            style={{float: 'left', width: '20%', height: '100%'}}
-            mode="inline"
-            defaultSelectedKeys={[selectedKey]}
-            onSelect={this.selectMenu}
-          >
-            <Menu.Item key="organic">有机垃圾</Menu.Item>
-            <Menu.Item key="huge">大件垃圾</Menu.Item>
-
-            <Menu.SubMenu
-              title="两网融合"
+        {flag ? null : (
+          <div style={{height: '100%'}}>
+            <Header/>
+            <Menu
+              style={{float: 'left', width: '10%', height: '100%'}}
+              mode="inline"
+              defaultSelectedKeys={[selectedKey]}
+              onSelect={this.selectMenu}
             >
-              <Menu.Item key="transfer">中转站</Menu.Item>
-              <Menu.Item key="recycle">上门回收/预约回收</Menu.Item>
-            </Menu.SubMenu>
-          </Menu>
+              <Menu.Item key="organic">有机垃圾</Menu.Item>
+              <Menu.Item key="huge">大件垃圾</Menu.Item>
 
-          {this.switchPage()}
-        </div>
+              <Menu.SubMenu
+                title="两网融合"
+              >
+                <Menu.Item key="transfer">中转站</Menu.Item>
+                <Menu.Item key="recycle">上门回收/预约回收</Menu.Item>
+              </Menu.SubMenu>
+            </Menu>
+
+            {this.switchPage()}
+          </div>
+        )}
       </ConfigProvider>
     );
   }

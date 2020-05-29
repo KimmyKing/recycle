@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Button, Table, DatePicker, Select, Modal, Form, Input, InputNumber, message, Row, Col, Typography} from "antd";
+import {Button, Table, DatePicker, Select, Modal, Form, Input, InputNumber, message, Row, Col} from "antd";
 import axios from 'axios';
 import moment from 'moment'
 import style from './view.less';
@@ -91,26 +91,48 @@ class Recycle extends Component {
   }
 
   clickEditButton = (id) => {
+    if (formRef.current) {
+      formRef.current.resetFields();
+    }
     this.setState({isAdd: false, showModal: true, selectedId: id}, () => {
       axios.get(`/front/api/v1/recycle/detail?id=${id}`).then(res => {
         const data = res.data.data;
-        formRef.current.setFieldsValue({
+        const value = {
           address: data.address,
           date: moment(data.date),
           inOut: data.inOut,
-          metal_weight: data.wasteMetalModel ? data.wasteMetalModel.weight : 0,
-          metal_price: data.wasteMetalModel ? data.wasteMetalModel.money : 0,
-          plastic_weight: data.wastePlasticModel ? data.wastePlasticModel.weight : 0,
-          plastic_price: data.wastePlasticModel ? data.wastePlasticModel.money : 0,
-          paper_weight: data.wastePaperModel ? data.wastePaperModel.weight : 0,
-          paper_price: data.wastePaperModel ? data.wastePaperModel.money : 0,
-          fabric_weight: data.wasteTextileModel ? data.wasteTextileModel.weight : 0,
-          fabric_price: data.wasteTextileModel ? data.wasteTextileModel.money : 0,
-          glass_weight: data.wasteGlassModel ? data.wasteGlassModel.weight : 0,
-          glass_price: data.wasteGlassModel ? data.wasteGlassModel.money : 0,
-          home_appliances_weight: data.wasteApplianceModel ? data.wasteApplianceModel.weight : 0,
-          home_appliances_price: data.wasteApplianceModel ? data.wasteApplianceModel.money : 0,
+        };
+        data.wasteList.map((v) => {
+          if (v.code === 'metal') {
+            value.metal_weight = v.weight;
+            value.metal_price = v.money;
+          }
+          if (v.code === 'plastic') {
+            value.plastic_weight = v.weight;
+            value.plastic_price = v.money;
+          }
+          if (v.code === 'paper') {
+            value.paper_weight = v.weight;
+            value.paper_price = v.money;
+          }
+          if (v.code === 'textile') {
+            value.textile_weight = v.weight;
+            value.textile_price = v.money;
+          }
+          if (v.code === 'glass') {
+            value.glass_weight = v.weight;
+            value.glass_price = v.money;
+          }
+          if (v.code === 'appliance') {
+            value.appliance_weight = v.weight;
+            value.appliance_price = v.money;
+          }
+          if (v.code === 'others') {
+            value.others_weight = v.weight;
+            value.others_price = v.money;
+          }
         });
+        formRef.current.setFieldsValue(value);
       });
     });
   }
@@ -135,56 +157,79 @@ class Recycle extends Component {
         address: values.address,
         date: moment(values.date).format('YYYY-MM-DD'),
         inOut: values.inOut,
+        wasteList: [],
       };
       let sumMoney = 0;
       let sumWeight = 0;
       if (values.metal_weight || values.metal_price) {
-        const wasteMetalModel = {};
-        wasteMetalModel.weight = values.metal_weight ? parseFloat(values.metal_weight) : 0;
-        wasteMetalModel.money =  values.metal_price ? parseFloat(values.metal_price) :  0;
-        data.wasteMetalModel = wasteMetalModel;
-        sumWeight += wasteMetalModel.weight;
-        sumMoney += wasteMetalModel.money;
+        const model = {
+          code: 'metal',
+          weight: values.metal_weight || 0,
+          money: values.metal_price || 0,
+        };
+        data.wasteList.push(model);
+        sumWeight += model.weight;
+        sumMoney += model.money;
       }
       if (values.plastic_weight || values.plastic_price) {
-        const wastePlasticModel = {};
-        wastePlasticModel.weight = values.plastic_weight ? parseFloat(values.plastic_weight) : 0;
-        wastePlasticModel.money =  values.plastic_price ? parseFloat(values.plastic_price) :  0;
-        data.wastePlasticModel = wastePlasticModel;
-        sumWeight += wastePlasticModel.weight;
-        sumMoney += wastePlasticModel.money;
+        const model = {
+          code: 'plastic',
+          weight: values.plastic_weight || 0,
+          money: values.plastic_price || 0,
+        };
+        data.wasteList.push(model);
+        sumWeight += model.weight;
+        sumMoney += model.money;
       }
       if (values.paper_weight || values.paper_price) {
-        const wastePaperModel = {};
-        wastePaperModel.weight = values.paper_weight ? parseFloat(values.paper_weight) : 0;
-        wastePaperModel.money =  values.paper_price ? parseFloat(values.paper_price) :  0;
-        data.wastePaperModel = wastePaperModel;
-        sumWeight += wastePaperModel.weight;
-        sumMoney += wastePaperModel.money;
+        const model = {
+          code: 'paper',
+          weight: values.paper_weight || 0,
+          money: values.paper_price || 0,
+        };
+        data.wasteList.push(model);
+        sumWeight += model.weight;
+        sumMoney += model.money;
       }
-      if (values.fabric_weight || values.fabric_price) {
-        const wasteTextileModel = {};
-        wasteTextileModel.weight = values.fabric_weight ? parseFloat(values.fabric_weight) : 0;
-        wasteTextileModel.money =  values.fabric_price ? parseFloat(values.fabric_price) :  0;
-        data.wasteTextileModel = wasteTextileModel;
-        sumWeight += wasteTextileModel.weight;
-        sumMoney += wasteTextileModel.money;
+      if (values.textile_weight || values.textile_price) {
+        const model = {
+          code: 'textile',
+          weight: values.textile_weight || 0,
+          money: values.textile_price || 0,
+        };
+        data.wasteList.push(model);
+        sumWeight += model.weight;
+        sumMoney += model.money;
       }
       if (values.glass_weight || values.glass_price) {
-        const wasteGlassModel = {};
-        wasteGlassModel.weight = values.glass_weight ? parseFloat(values.glass_weight) : 0;
-        wasteGlassModel.money =  values.glass_price ? parseFloat(values.glass_price) :  0;
-        data.wasteGlassModel = wasteGlassModel;
-        sumWeight += wasteGlassModel.weight;
-        sumMoney += wasteGlassModel.money;
+        const model = {
+          code: 'glass',
+          weight: values.glass_weight || 0,
+          money: values.glass_price || 0,
+        };
+        data.wasteList.push(model);
+        sumWeight += model.weight;
+        sumMoney += model.money;
       }
-      if (values.home_appliances_weight || values.home_appliances_price) {
-        const wasteApplianceModel = {};
-        wasteApplianceModel.weight = values.home_appliances_weight ? parseFloat(values.home_appliances_weight) : 0;
-        wasteApplianceModel.money =  values.home_appliances_price ? parseFloat(values.home_appliances_price) :  0;
-        data.wasteApplianceModel = wasteApplianceModel;
-        sumWeight += wasteApplianceModel.weight;
-        sumMoney += wasteApplianceModel.money;
+      if (values.appliance_weight || values.appliance_price) {
+        const model = {
+          code: 'appliance',
+          weight: values.appliance_weight || 0,
+          money: values.appliance_price || 0,
+        };
+        data.wasteList.push(model);
+        sumWeight += model.weight;
+        sumMoney += model.money;
+      }
+      if (values.others_weight || values.others_price) {
+        const model = {
+          code: 'others',
+          weight: values.others_weight || 0,
+          money: values.others_price || 0,
+        };
+        data.wasteList.push(model);
+        sumWeight += model.weight;
+        sumMoney += model.money;
       }
       data.sumMoney = sumMoney.toFixed(2);
       data.sumWeight = sumWeight.toFixed(2);
@@ -197,7 +242,6 @@ class Recycle extends Component {
       request.then(res => {
         this.setState({showModal: false}, () => {
           if (res.data.code === 0) {
-            formRef.current.resetFields();
             this.getViewData();
           } else {
             message.error('请求失败');
@@ -269,7 +313,7 @@ class Recycle extends Component {
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
 
@@ -280,7 +324,7 @@ class Recycle extends Component {
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0}  style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
           </Row>
@@ -293,7 +337,7 @@ class Recycle extends Component {
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
 
@@ -304,11 +348,10 @@ class Recycle extends Component {
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
           </Row>
-
 
           <Row>
             <Col span={12}>
@@ -318,7 +361,7 @@ class Recycle extends Component {
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
 
@@ -329,35 +372,33 @@ class Recycle extends Component {
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
           </Row>
-
 
           <Row>
             <Col span={12}>
               <Form.Item
                 label="废织物重量"
-                name="fabric_weight"
+                name="textile_weight"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 label="废织物价格"
-                name="fabric_price"
+                name="textile_price"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
           </Row>
-
 
           <Row>
             <Col span={12}>
@@ -367,7 +408,7 @@ class Recycle extends Component {
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -377,30 +418,52 @@ class Recycle extends Component {
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item></Col>
           </Row>
 
           <Row>
-            <Col span={12}>
+          <Col span={12}>
+            <Form.Item
+              label="废家电重量"
+              name="appliance_weight"
+              labelCol={labelCol}
+              wrapperCol={wrapperCol}
+            >
+              <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="废家电价格"
+              name="appliance_price"
+              labelCol={labelCol}
+              wrapperCol={wrapperCol}
+            >
+              <InputNumber min={0} style={{width: '100%'}} precision={2}/>
+            </Form.Item>
+          </Col>
+        </Row>
 
+          <Row>
+            <Col span={12}>
               <Form.Item
-                label="废家电重量"
-                name="home_appliances_weight"
+                label="其它重量"
+                name="others_weight"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="废家电价格"
-                name="home_appliances_price"
+                label="其它价格"
+                name="others_price"
                 labelCol={labelCol}
                 wrapperCol={wrapperCol}
               >
-                <InputNumber style={{width: '100%'}} precision={2}/>
+                <InputNumber min={0} style={{width: '100%'}} precision={2}/>
               </Form.Item>
             </Col>
           </Row>
@@ -466,15 +529,27 @@ class Recycle extends Component {
         children: [
           {
             title: '重量',
-            dataIndex: 'wasteMetalModel',
-            key: 'wasteMetalModel.weight',
-            render: wasteMetalModel => <div>{wasteMetalModel ? wasteMetalModel.weight : 0}</div>
+            dataIndex: 'wasteList',
+            key: 'metalWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'metal') {
+                  return <div>{v.weight}</div>
+                }
+              })
+            )
           },
           {
             title: '金额',
-            dataIndex: 'wasteMetalModel',
-            key: 'wasteMetalModel.money',
-            render: wasteMetalModel => <div>{wasteMetalModel ? wasteMetalModel.money : 0}</div>
+            dataIndex: 'wasteList',
+            key: 'metalMoney',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'metal') {
+                  return <div>{v.money}</div>
+                }
+              })
+            )
           },
         ],
       },
@@ -483,15 +558,27 @@ class Recycle extends Component {
         children: [
           {
             title: '重量',
-            dataIndex: 'wastePlasticModel',
-            key: 'wastePlasticModel.weight',
-            render: wastePlasticModel => <div>{wastePlasticModel ? wastePlasticModel.weight : 0}</div>
+            dataIndex: 'wasteList',
+            key: 'plasticWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'plastic') {
+                  return <div>{v.weight}</div>
+                }
+              })
+            )
           },
           {
             title: '金额',
-            dataIndex: 'wastePlasticModel',
-            key: 'wastePlasticModel.money',
-            render: wastePlasticModel => <div>{wastePlasticModel ? wastePlasticModel.money : 0}</div>
+            dataIndex: 'wasteList',
+            key: 'plasticMoney',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'plastic') {
+                  return <div>{v.money}</div>
+                }
+              })
+            )
           },
         ],
       },
@@ -500,15 +587,27 @@ class Recycle extends Component {
         children: [
           {
             title: '重量',
-            dataIndex: 'wastePaperModel',
-            key: 'wastePaperModel.weight',
-            render: wastePaperModel => <div>{wastePaperModel ? wastePaperModel.weight : 0}</div>
+            dataIndex: 'wasteList',
+            key: 'paperWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'paper') {
+                  return <div>{v.weight}</div>
+                }
+              })
+            )
           },
           {
             title: '金额',
-            dataIndex: 'wastePaperModel',
-            key: 'wastePaperModel.money',
-            render: wastePaperModel => <div>{wastePaperModel ? wastePaperModel.money : 0}</div>
+            dataIndex: 'wasteList',
+            key: 'paperMoney',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'paper') {
+                  return <div>{v.money}</div>
+                }
+              })
+            )
           },
         ],
       },
@@ -517,15 +616,27 @@ class Recycle extends Component {
         children: [
           {
             title: '重量',
-            dataIndex: 'wasteTextileModel',
-            key: 'wasteTextileModel.weight',
-            render: wasteTextileModel => <div>{wasteTextileModel ? wasteTextileModel.weight : 0}</div>
+            dataIndex: 'wasteList',
+            key: 'textileWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'textile') {
+                  return <div>{v.weight}</div>
+                }
+              })
+            )
           },
           {
             title: '金额',
-            dataIndex: 'wasteTextileModel',
-            key: 'wasteTextileModel.money',
-            render: wasteTextileModel => <div>{wasteTextileModel ? wasteTextileModel.money : 0}</div>
+            dataIndex: 'wasteList',
+            key: 'textileMoney',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'textile') {
+                  return <div>{v.money}</div>
+                }
+              })
+            )
           },
         ],
       },
@@ -534,15 +645,27 @@ class Recycle extends Component {
         children: [
           {
             title: '重量',
-            dataIndex: 'wasteGlassModel',
-            key: 'wasteGlassModel.weight',
-            render: wasteGlassModel => <div>{wasteGlassModel ? wasteGlassModel.weight : 0}</div>
+            dataIndex: 'wasteList',
+            key: 'glassWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'glass') {
+                  return <div>{v.weight}</div>
+                }
+              })
+            )
           },
           {
             title: '金额',
-            dataIndex: 'wasteGlassModel',
-            key: 'wasteGlassModel.money',
-            render: wasteGlassModel => <div>{wasteGlassModel ? wasteGlassModel.money : 0}</div>
+            dataIndex: 'wasteList',
+            key: 'glassMoney',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'glass') {
+                  return <div>{v.money}</div>
+                }
+              })
+            )
           },
         ],
       },
@@ -551,15 +674,56 @@ class Recycle extends Component {
         children: [
           {
             title: '重量',
-            dataIndex: 'wasteApplianceModel',
-            key: 'wasteApplianceModel.weight',
-            render: wasteApplianceModel => <div>{wasteApplianceModel ? wasteApplianceModel.weight : 0}</div>
+            dataIndex: 'wasteList',
+            key: 'applianceWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'appliance') {
+                  return <div>{v.money}</div>
+                }
+              })
+            )
           },
           {
             title: '金额',
-            dataIndex: 'wasteApplianceModel',
-            key: 'wasteApplianceModel.money',
-            render: wasteApplianceModel => <div>{wasteApplianceModel ? wasteApplianceModel.money : 0}</div>
+            dataIndex: 'wasteList',
+            key: 'applianceMoney',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'appliance') {
+                  return <div>{v.money}</div>
+                }
+              })
+            )
+          },
+        ],
+      },
+      {
+        title: '其它',
+        children: [
+          {
+            title: '重量',
+            dataIndex: 'wasteList',
+            key: 'othersWeight',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'others') {
+                  return <div>{v.weight}</div>
+                }
+              })
+            )
+          },
+          {
+            title: '金额',
+            dataIndex: 'wasteList',
+            key: 'othersMoney',
+            render: wasteList => (
+              wasteList.map((v) => {
+                if (v.code === 'others') {
+                  return <div>{v.money}</div>
+                }
+              })
+            )
           },
         ],
       },
@@ -579,11 +743,12 @@ class Recycle extends Component {
     const {pageSize, loading, data, currentPage} = this.state;
     return (
       <Table
-        style={{float: 'right', width: '80%'}}
+        style={{...this.props.style}}
         loading={loading}
         dataSource={data.list}
         columns={this.getColumns()}
         bordered
+        scroll={{x: 'max-content'}}
         pagination={{pageSize: pageSize, current: currentPage, total: data.total}}
         onChange={({current}) => {
           this.setState({currentPage: current}, () => {});
@@ -602,48 +767,22 @@ class Recycle extends Component {
               <Table.Summary.Cell>总计</Table.Summary.Cell>
               <Table.Summary.Cell/>
               <Table.Summary.Cell/>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigth}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoney}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigthMetal}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoneyMetal}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigthPlastic}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoneyPlastic}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigthPaper}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoneyPaper}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigthTextile}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoneyTextile}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigthGlass}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoneyGlass}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumWeigthappliance}</Typography.Text>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell>
-                <Typography.Text>{data.sumMoneyappliance}</Typography.Text>
-              </Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumWeight}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumMoney}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumWeightMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumMoneyMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumWeightPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumMoneyPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumWeightPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumMoneyPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumWeightTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumMoneyTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumWeightGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumMoneyGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumWeightappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumMoneyappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumWeightOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{data.sumSumMoneyOthers}</Table.Summary.Cell>
             </Table.Summary.Row>
           );
         }}
