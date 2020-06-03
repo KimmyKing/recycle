@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {connect} from "dva";
-import {Menu, ConfigProvider, Button} from 'antd'
+import {Menu, ConfigProvider} from 'antd'
 import zhCN from 'antd/es/locale/zh_CN';
 import Header from '../components/Header';
 import Organic from "../components/Organic";

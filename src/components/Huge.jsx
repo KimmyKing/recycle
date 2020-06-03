@@ -16,7 +16,7 @@ class Huge extends Component {
     super();
     this.state = {
       type: 2,
-      pageSize: 10,
+      pageSize: 20,
       currentPage: 1,
       isAdd: false,
       showModal: false,
@@ -29,6 +29,8 @@ class Huge extends Component {
         address: '',
         inOut: '',
       },
+      searchLoading: false,
+      totalData: {},
     }
   }
 
@@ -47,6 +49,21 @@ class Huge extends Component {
         });
       })
     })
+  }
+
+  getTotalData = () => {
+    this.setState({searchLoading: true}, (res) => {
+      const {type, params} = this.state;
+      axios.get(`/front/api/v1/recycle/list?type=${type}`, {params}).then(res => {
+        if (res.data.code === 0) {
+          this.setState({totalData: res.data.data, searchLoading: false});
+        }
+      }).catch(err => {
+        this.setState({searchLoading: false}, () => {
+          message.error('服务断开');
+        });
+      })
+    });
   }
 
   paramsChanged = (type, e) => {
@@ -78,6 +95,7 @@ class Huge extends Component {
   clickSearchButton = () => {
     this.setState({currentPage: 1}, () => {
       this.getViewData();
+      this.getTotalData();
     });
   }
 
@@ -295,6 +313,7 @@ class Huge extends Component {
   }
 
   configureSearchView = () => {
+    const {searchLoading} = this.state;
     return (
       <div style={{padding: '10px 0', display: 'flex'}}>
         <div className={style.search_title}>开始时间：</div>
@@ -304,7 +323,7 @@ class Huge extends Component {
 
         <div className={style.search_title}>地点：</div>
         <Input placeholder="请输入地点" allowClear style={{width: '150px'}} onChange={this.paramsChanged.bind(this, 'address')}/>
-        <Button className={style.search_btn} type="primary" onClick={this.clickSearchButton}>查询</Button>
+        <Button className={style.search_btn} type="primary" loading={searchLoading} onClick={this.clickSearchButton}>查询</Button>
       </div>
     )
   }
@@ -383,7 +402,7 @@ class Huge extends Component {
   }
 
   configureTableView = () => {
-    const {pageSize, loading, data, currentPage} = this.state;
+    const {pageSize, loading, data, totalData, currentPage} = this.state;
     return (
       <Table
         style={{...this.props.style}}
@@ -408,13 +427,13 @@ class Huge extends Component {
             <Table.Summary.Row>
               <Table.Summary.Cell>总计</Table.Summary.Cell>
               <Table.Summary.Cell/>
-              <Table.Summary.Cell>{data.sumInWeightbulky}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInPricebulky}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInCarsbulky}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutWeightbulky}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutPricebulky}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutCarsbulky}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumCarsbulky}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInWeightbulky}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInPricebulky}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInCarsbulky}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutWeightbulky}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutPricebulky}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutCarsbulky}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumCarsbulky}</Table.Summary.Cell>
             </Table.Summary.Row>
           );
         }}

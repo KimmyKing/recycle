@@ -1,6 +1,6 @@
 import dva from 'dva';
 import axios from 'axios';
-import './index.css';
+import './index.less';
 
 axios.defaults.baseURL = 'http://127.0.0.1:8081';
 

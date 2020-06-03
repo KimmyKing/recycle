@@ -16,7 +16,7 @@ class Recycle extends Component {
     super();
     this.state = {
       type: 4,
-      pageSize: 10,
+      pageSize: 20,
       currentPage: 1,
       isAdd: false,
       showModal: false,
@@ -30,6 +30,8 @@ class Recycle extends Component {
         address: '',
         inOut: '',
       },
+      searchLoading: false,
+      totalData: {},
     }
   }
 
@@ -48,6 +50,21 @@ class Recycle extends Component {
         });
       })
     })
+  }
+
+  getTotalData = () => {
+    this.setState({searchLoading: true}, (res) => {
+      const {type, params} = this.state;
+      axios.get(`/front/api/v1/recycle/list?type=${type}`, {params}).then(res => {
+        if (res.data.code === 0) {
+          this.setState({totalData: res.data.data, searchLoading: false});
+        }
+      }).catch(err => {
+        this.setState({searchLoading: false}, () => {
+          message.error('服务断开');
+        });
+      })
+    });
   }
 
   paramsChanged = (type, e) => {
@@ -79,6 +96,7 @@ class Recycle extends Component {
   clickSearchButton = () => {
     this.setState({currentPage: 1}, () => {
       this.getViewData();
+      this.getTotalData();
     });
   }
 
@@ -473,6 +491,7 @@ class Recycle extends Component {
   }
 
   configureSearchView = () => {
+    const {searchLoading} = this.state;
     return (
       <div style={{padding: '10px 0', display: 'flex'}}>
         <div className={style.search_title}>开始时间：</div>
@@ -490,7 +509,7 @@ class Recycle extends Component {
           <Select.Option key={2}>出</Select.Option>
         </Select>
 
-        <Button className={style.search_btn} type="primary" onClick={this.clickSearchButton}>查询</Button>
+        <Button className={style.search_btn} type="primary" loading={searchLoading} onClick={this.clickSearchButton}>查询</Button>
       </div>
     )
   }
@@ -740,7 +759,7 @@ class Recycle extends Component {
   }
 
   configureTableView = () => {
-    const {pageSize, loading, data, currentPage} = this.state;
+    const {pageSize, loading, data, totalData, currentPage} = this.state;
     return (
       <Table
         style={{...this.props.style}}
@@ -767,22 +786,22 @@ class Recycle extends Component {
               <Table.Summary.Cell>总计</Table.Summary.Cell>
               <Table.Summary.Cell/>
               <Table.Summary.Cell/>
-              <Table.Summary.Cell>{data.sumSumWeight}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumMoney}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumWeightMetal}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumMoneyMetal}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumWeightPlastic}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumMoneyPlastic}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumWeightPaper}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumMoneyPaper}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumWeightTextile}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumMoneyTextile}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumWeightGlass}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumMoneyGlass}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumWeightappliance}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumMoneyappliance}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumWeightOthers}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumMoneyOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumWeight}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumMoney}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumWeightMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumMoneyMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumWeightPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumMoneyPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumWeightPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumMoneyPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumWeightTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumMoneyTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumWeightGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumMoneyGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumWeightappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumMoneyappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumWeightOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumMoneyOthers}</Table.Summary.Cell>
             </Table.Summary.Row>
           );
         }}

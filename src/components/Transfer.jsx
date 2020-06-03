@@ -16,7 +16,7 @@ class Transfer extends Component {
     super();
     this.state = {
       type: 3,
-      pageSize: 10,
+      pageSize: 20,
       currentPage: 1,
       isAdd: false,
       showModal: false,
@@ -29,6 +29,8 @@ class Transfer extends Component {
         address: '',
         inOut: '',
       },
+      searchLoading: false,
+      totalData: {},
     }
   }
 
@@ -47,6 +49,21 @@ class Transfer extends Component {
         });
       })
     })
+  }
+
+  getTotalData = () => {
+    this.setState({searchLoading: true}, (res) => {
+      const {type, params} = this.state;
+      axios.get(`/front/api/v1/recycle/list?type=${type}`, {params}).then(res => {
+        if (res.data.code === 0) {
+          this.setState({totalData: res.data.data, searchLoading: false});
+        }
+      }).catch(err => {
+        this.setState({searchLoading: false}, () => {
+          message.error('服务断开');
+        });
+      })
+    });
   }
 
   paramsChanged = (type, e) => {
@@ -78,6 +95,7 @@ class Transfer extends Component {
   clickSearchButton = () => {
     this.setState({currentPage: 1}, () => {
       this.getViewData();
+      this.getTotalData();
     });
   }
 
@@ -194,12 +212,12 @@ class Transfer extends Component {
       if (values.metal_inWeight || values.metal_inCars || values.metal_inPrice || values.metal_outWeight || values.metal_outCars || values.metal_outPrice || values.metal_memo) {
         const model = {
           code: 'metal',
-          inWeight: values.metal_inWeight,
-          inCars: values.metal_inCars,
-          inPrice: values.metal_inPrice,
+          inWeight: values.metal_inWeight || 0,
+          inCars: values.metal_inCars || 0,
+          inPrice: values.metal_inPrice || 0,
           outWeight: values.metal_outWeight,
-          outCars: values.metal_outCars,
-          outPrice: values.metal_outPrice,
+          outCars: values.metal_outCars || 0,
+          outPrice: values.metal_outPrice || 0,
           memo: values.metal_memo,
         };
         if (model.inCars || model.outCars) {
@@ -210,12 +228,12 @@ class Transfer extends Component {
       if (values.plastic_inWeight || values.plastic_inCars || values.plastic_inPrice || values.plastic_outWeight || values.plastic_outCars || values.plastic_outPrice || values.plastic_memo) {
         const model = {
           code: 'plastic',
-          inWeight: values.plastic_inWeight,
-          inCars: values.plastic_inCars,
-          inPrice: values.plastic_inPrice,
-          outWeight: values.plastic_outWeight,
-          outCars: values.plastic_outCars,
-          outPrice: values.plastic_outPrice,
+          inWeight: values.plastic_inWeight || 0,
+          inCars: values.plastic_inCars || 0,
+          inPrice: values.plastic_inPrice || 0,
+          outWeight: values.plastic_outWeight || 0,
+          outCars: values.plastic_outCars || 0,
+          outPrice: values.plastic_outPrice || 0,
           memo: values.plastic_memo,
         };
         if (model.inCars || model.outCars) {
@@ -226,12 +244,12 @@ class Transfer extends Component {
       if (values.paper_inWeight || values.paper_inCars || values.paper_inPrice || values.paper_outWeight || values.paper_outCars || values.paper_outPrice || values.paper_memo) {
         const model = {
           code: 'paper',
-          inWeight: values.paper_inWeight,
-          inCars: values.paper_inCars,
-          inPrice: values.paper_inPrice,
-          outWeight: values.paper_outWeight,
-          outCars: values.paper_outCars,
-          outPrice: values.paper_outPrice,
+          inWeight: values.paper_inWeight || 0,
+          inCars: values.paper_inCars || 0,
+          inPrice: values.paper_inPrice || 0,
+          outWeight: values.paper_outWeight || 0,
+          outCars: values.paper_outCars || 0,
+          outPrice: values.paper_outPrice || 0,
           memo: values.paper_memo,
         };
         if (model.inCars || model.outCars) {
@@ -242,12 +260,12 @@ class Transfer extends Component {
       if (values.textile_inWeight || values.textile_inCars || values.textile_inPrice || values.textile_outWeight || values.textile_outCars || values.textile_outPrice || values.textile_memo) {
         const model = {
           code: 'textile',
-          inWeight: values.textile_inWeight,
-          inCars: values.textile_inCars,
-          inPrice: values.textile_inPrice,
-          outWeight: values.textile_outWeight,
-          outCars: values.textile_outCars,
-          outPrice: values.textile_outPrice,
+          inWeight: values.textile_inWeight || 0,
+          inCars: values.textile_inCars || 0,
+          inPrice: values.textile_inPrice || 0,
+          outWeight: values.textile_outWeight || 0,
+          outCars: values.textile_outCars || 0,
+          outPrice: values.textile_outPrice || 0,
           memo: values.textile_memo,
         };
         if (model.inCars || model.outCars) {
@@ -258,12 +276,12 @@ class Transfer extends Component {
       if (values.glass_inWeight || values.glass_inCars || values.glass_inPrice || values.glass_outWeight || values.glass_outCars || values.glass_outPrice || values.glass_memo) {
         const model = {
           code: 'glass',
-          inWeight: values.glass_inWeight,
-          inCars: values.glass_inCars,
-          inPrice: values.glass_inPrice,
-          outWeight: values.glass_outWeight,
-          outCars: values.glass_outCars,
-          outPrice: values.glass_outPrice,
+          inWeight: values.glass_inWeight || 0,
+          inCars: values.glass_inCars || 0,
+          inPrice: values.glass_inPrice || 0,
+          outWeight: values.glass_outWeight || 0,
+          outCars: values.glass_outCars || 0,
+          outPrice: values.glass_outPrice || 0,
           memo: values.glass_memo,
         };
         if (model.inCars || model.outCars) {
@@ -274,12 +292,12 @@ class Transfer extends Component {
       if (values.appliance_inWeight || values.appliance_inCars || values.appliance_inPrice || values.appliance_outWeight || values.appliance_outCars || values.appliance_outPrice || values.appliance_memo) {
         const model = {
           code: 'appliance',
-          inWeight: values.appliance_inWeight,
-          inCars: values.appliance_inCars,
-          inPrice: values.appliance_inPrice,
-          outWeight: values.appliance_outWeight,
-          outCars: values.appliance_outCars,
-          outPrice: values.appliance_outPrice,
+          inWeight: values.appliance_inWeight || 0,
+          inCars: values.appliance_inCars || 0,
+          inPrice: values.appliance_inPrice || 0,
+          outWeight: values.appliance_outWeight || 0,
+          outCars: values.appliance_outCars || 0,
+          outPrice: values.appliance_outPrice || 0,
           memo: values.appliance_memo,
         };
         if (model.inCars || model.outCars) {
@@ -290,12 +308,12 @@ class Transfer extends Component {
       if (values.others_inWeight || values.others_inCars || values.others_inPrice || values.others_outWeight || values.others_outCars || values.others_outPrice || values.others_memo) {
         const model = {
           code: 'others',
-          inWeight: values.others_inWeight,
-          inCars: values.others_inCars,
-          inPrice: values.others_inPrice,
-          outWeight: values.others_outWeight,
-          outCars: values.others_outCars,
-          outPrice: values.others_outPrice,
+          inWeight: values.others_inWeight || 0,
+          inCars: values.others_inCars || 0,
+          inPrice: values.others_inPrice || 0,
+          outWeight: values.others_outWeight || 0,
+          outCars: values.others_outCars || 0,
+          outPrice: values.others_outPrice || 0,
           memo: values.others_memo,
         };
         if (model.inCars || model.outCars) {
@@ -937,6 +955,7 @@ class Transfer extends Component {
   }
 
   configureSearchView = () => {
+    const {searchLoading} = this.state;
     return (
       <div style={{padding: '10px 0', display: 'flex'}}>
         <div className={style.search_title}>开始时间：</div>
@@ -946,7 +965,7 @@ class Transfer extends Component {
 
         <div className={style.search_title}>地点：</div>
         <Input placeholder="请输入地点" allowClear style={{width: '150px'}} onChange={this.paramsChanged.bind(this, 'address')}/>
-        <Button className={style.search_btn} type="primary" onClick={this.clickSearchButton}>查询</Button>
+        <Button className={style.search_btn} type="primary" loading={searchLoading} onClick={this.clickSearchButton}>查询</Button>
       </div>
     )
   }
@@ -1683,7 +1702,7 @@ class Transfer extends Component {
   }
 
   configureTableView = () => {
-    const {pageSize, loading, data, currentPage} = this.state;
+    const {pageSize, loading, data, totalData, currentPage} = this.state;
     return (
       <Table
         style={{...this.props.style}}
@@ -1709,67 +1728,67 @@ class Transfer extends Component {
             <Table.Summary.Row>
               <Table.Summary.Cell>总计</Table.Summary.Cell>
               <Table.Summary.Cell/>
-              <Table.Summary.Cell>{data.sumInWeightMetal}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInPriceMetal}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInCarsMetal}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutWeightMetal}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutPriceMetal}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutCarsMetal}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumCarsMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInWeightMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInPriceMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInCarsMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutWeightMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutPriceMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutCarsMetal}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumCarsMetal}</Table.Summary.Cell>
               <Table.Summary.Cell/>
 
-              <Table.Summary.Cell>{data.sumInWeightPlastic}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInPricePlastic}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInCarsPlastic}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutWeightPlastic}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutPricePlastic}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutCarsPlastic}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumCarsPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInWeightPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInPricePlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInCarsPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutWeightPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutPricePlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutCarsPlastic}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumCarsPlastic}</Table.Summary.Cell>
               <Table.Summary.Cell/>
 
-              <Table.Summary.Cell>{data.sumInWeightPaper}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInPricePaper}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInCarsPaper}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutWeightPaper}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutPricePaper}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutCarsPaper}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumCarsPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInWeightPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInPricePaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInCarsPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutWeightPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutPricePaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutCarsPaper}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumCarsPaper}</Table.Summary.Cell>
               <Table.Summary.Cell/>
 
-              <Table.Summary.Cell>{data.sumInWeightTextile}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInPriceTextile}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInCarsTextile}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutWeightTextile}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutPriceTextile}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutCarsTextile}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumCarsTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInWeightTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInPriceTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInCarsTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutWeightTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutPriceTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutCarsTextile}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumCarsTextile}</Table.Summary.Cell>
               <Table.Summary.Cell/>
 
-              <Table.Summary.Cell>{data.sumInWeightGlass}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInPriceGlass}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInCarsGlass}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutWeightGlass}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutPriceGlass}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutCarsGlass}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumCarsGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInWeightGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInPriceGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInCarsGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutWeightGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutPriceGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutCarsGlass}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumCarsGlass}</Table.Summary.Cell>
               <Table.Summary.Cell/>
 
-              <Table.Summary.Cell>{data.sumInWeightappliance}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInPriceappliance}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInCarsappliance}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutWeightappliance}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutPriceappliance}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutCarsappliance}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumCarsappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInWeightappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInPriceappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInCarsappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutWeightappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutPriceappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutCarsappliance}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumCarsappliance}</Table.Summary.Cell>
               <Table.Summary.Cell/>
 
-              <Table.Summary.Cell>{data.sumInWeightOthers}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInPriceOthers}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumInCarsOthers}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutWeightOthers}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutPriceOthers}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumOutCarsOthers}</Table.Summary.Cell>
-              <Table.Summary.Cell>{data.sumSumCarsOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInWeightOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInPriceOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumInCarsOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutWeightOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutPriceOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumOutCarsOthers}</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalData.sumSumCarsOthers}</Table.Summary.Cell>
               <Table.Summary.Cell/>
             </Table.Summary.Row>
           );
