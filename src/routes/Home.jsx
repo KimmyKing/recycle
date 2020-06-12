@@ -40,36 +40,29 @@ class Home extends Component {
 
   render(){
     const {selectedKey} = this.state;
-    const now = new Date().getTime();
-    let flag = false;
-    if (now > 1606752000000) {
-      flag = true;
-    }
     return (
       <ConfigProvider locale={zhCN}>
-        {flag ? null : (
-          <div style={{height: '100%'}}>
-            <Header/>
-            <Menu
-              style={{float: 'left', width: '10%', height: '100%'}}
-              mode="inline"
-              defaultSelectedKeys={[selectedKey]}
-              onSelect={this.selectMenu}
+        <div style={{height: '100%'}}>
+          <Header/>
+          <Menu
+            style={{float: 'left', width: '10%', height: '100%'}}
+            mode="inline"
+            defaultSelectedKeys={[selectedKey]}
+            onSelect={this.selectMenu}
+          >
+            <Menu.Item key="organic">有机垃圾</Menu.Item>
+            <Menu.Item key="huge">大件垃圾</Menu.Item>
+
+            <Menu.SubMenu
+              title="两网融合"
             >
-              <Menu.Item key="organic">有机垃圾</Menu.Item>
-              <Menu.Item key="huge">大件垃圾</Menu.Item>
+              <Menu.Item key="transfer">中转站</Menu.Item>
+              <Menu.Item key="recycle">上门回收/预约回收</Menu.Item>
+            </Menu.SubMenu>
+          </Menu>
 
-              <Menu.SubMenu
-                title="两网融合"
-              >
-                <Menu.Item key="transfer">中转站</Menu.Item>
-                <Menu.Item key="recycle">上门回收/预约回收</Menu.Item>
-              </Menu.SubMenu>
-            </Menu>
-
-            {this.switchPage()}
-          </div>
-        )}
+          {this.switchPage()}
+        </div>
       </ConfigProvider>
     );
   }
