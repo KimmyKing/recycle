@@ -698,7 +698,7 @@ class Recycle extends Component {
             render: wasteList => (
               wasteList.map((v) => {
                 if (v.code === 'appliance') {
-                  return <div>{v.money}</div>
+                  return <div>{v.weight}</div>
                 }
               })
             )
